@@ -761,12 +761,12 @@ const TOPIC_ICONS={all:'<svg viewBox="0 0 24 24" width="26" height="26" fill="cu
 function rulesList(){
   const s=settings, p=s.points, t=s.time, items=[];
   items.push("Каждая команда выбирает <b>одного отвечающего</b>. Только он называет ответ команды.");
-  if(s.orderOn) items.push(`Когда команда готова ответить, отвечающий нажимает кнопку на столе и ждёт${s.timerOn?" окончания времени по таймеру":", пока ведущий не попросит ответить"}.`);
+  if(s.orderOn) items.push(`Когда команда готова ответить, отвечающий поднимает руку и ждёт${s.timerOn?" окончания времени по таймеру":", пока ведущий не попросит ответить"}.`);
   else items.push(s.timerOn?"Команда совещается, пока идёт таймер, и выбирает один из трёх ответов.":"Команда совещается и выбирает один из трёх ответов.");
-  if(s.orderOn) items.push(`${s.timerOn?"Когда таймер закончит отсчёт, ":"Затем "}команды по очереди — в том порядке, в каком нажали кнопку, — называют свой ответ.`);
+  if(s.orderOn) items.push(`${s.timerOn?"Когда таймер закончит отсчёт, ":"Затем "}команды по очереди — в том порядке, в каком подняли руку, — называют свой ответ.`);
   else items.push(`${s.timerOn?"Когда время выйдет, ":"Затем "}отвечающие называют ответы своих команд, ведущий их отмечает.`);
   items.push("За правильный ответ команда получает баллы:");
-  if(s.orderOn&&s.bonusOn) items.push(`Команда, которая нажала кнопку <b>первой</b>: ответила верно — ещё <b>+${fmt(s.bonus)}</b> балла, ответила неверно — <b>−${fmt(s.bonus)}</b> балла.`);
+  if(s.orderOn&&s.bonusOn) items.push(`Команда, которая <b>первой</b> подняла руку: ответила верно — ещё <b>+${fmt(s.bonus)}</b> балла, ответила неверно — <b>−${fmt(s.bonus)}</b> балла.`);
   if(s.timerOn) items.push(`Время на вопрос: лёгкий — ${mmss(t.easy)}, средний — ${mmss(t.medium)}, сложный — ${mmss(t.hard)}.`);
   items.push("Во время вопросов баллы не показываются. Их объявляют после каждого раунда (лёгкие, средние и сложные вопросы), а в конце игры турнирная таблица покажет места команд.");
   if(s.extra&&s.extra.trim()) s.extra.trim().split(/\n+/).forEach(x=>items.push(esc(x)));
@@ -804,7 +804,7 @@ function renderPlay(){
     const d=teamDelta(q,r,i);
     return `<div class="team" style="--c:${t.color}">
       <div class="team-top"><span class="team-name">${esc(t.name)}</span></div>
-      ${settings.orderOn?`<div class="press">${r.order[i]?`<button class="order" id="ord${i}" data-unorder="${i}" title="Снять отметку">${r.order[i]}-я нажала ✕</button>`:`<button class="btn" id="ord${i}" data-press="${i}">Нажали кнопку</button>`}</div>`:""}
+      ${settings.orderOn?`<div class="press">${r.order[i]?`<button class="order" id="ord${i}" data-unorder="${i}" title="Снять отметку">${r.order[i]}-я подняла руку ✕</button>`:`<button class="btn" id="ord${i}" data-press="${i}">✋ Подняли руку</button>`}</div>`:""}
       ${r.revealed?teamResult(q,r,i):`<div class="pick" role="group" aria-label="Ответ команды ${esc(t.name)}">${LETTERS.map((L,k)=>`<button id="p${i}-${k}" data-team="${i}" data-ans="${k}" aria-pressed="${r.ans[i]===k}">${L}</button>`).join("")}</div>`}
     </div>`}).join("");
   return `<div class="stage lv-${q.level}">
@@ -1163,7 +1163,7 @@ function renderSettings(){
         <label class="switch"><input type="checkbox" id="s-timerOn" data-sw="timerOn" ${s.timerOn?"checked":""}><span><b>Таймер включён</b><br><span class="hidden-msg">Если выключить, ведущий сам решает, когда показать ответ.</span></span></label>
         <label class="switch"><input type="checkbox" id="s-soundOn" data-sw="soundOn" ${s.soundOn!==false?"checked":""}><span><b>Звуки: тиканье таймера и барабан</b><br><span class="hidden-msg">Таймер тикает каждую секунду во всех играх, последние 10 секунд — громче.</span></span></label></section>
       <section class="panel stack"><h2>Очерёдность и бонус</h2>
-        <label class="switch"><input type="checkbox" id="s-orderOn" data-sw="orderOn" ${s.orderOn?"checked":""}><span><b>Учитывать, какая команда нажала кнопку первой</b><br><span class="hidden-msg">Ведущий отмечает порядок нажатия, команды отвечают по очереди.</span></span></label>
+        <label class="switch"><input type="checkbox" id="s-orderOn" data-sw="orderOn" ${s.orderOn?"checked":""}><span><b>Учитывать, какая команда первой подняла руку</b><br><span class="hidden-msg">Ведущий отмечает, кто в каком порядке поднял руку, команды отвечают по очереди.</span></span></label>
         <label class="switch"><input type="checkbox" id="s-bonusOn" data-sw="bonusOn" ${s.bonusOn?"checked":""} ${s.orderOn?"":"disabled"}><span><b>Бонус и штраф первой команде</b><br><span class="hidden-msg">Верно — плюс, неверно — минус. Работает, только если учитывается очерёдность.</span></span></label>
         <label class="trip" style="grid-template-columns:1fr"><span>Размер бонуса и штрафа, баллы</span><input type="number" id="s-bonus" data-s="bonus" min="0" step="0.5" value="${s.bonus}"></label>
       </section>
@@ -1815,7 +1815,7 @@ function renderSvoya(){
   if(sv.phase==="end") return renderEnd();
   if(sv.phase==="setup"){const n=sv.teamCount;
     return `<div class="stack">
-    <div><h1>Своя игра</h1><p class="lead">Табло из пяти тем и пяти цен. Кто первым нажал кнопку — тот и отвечает. Верно — очки прибавляются, неверно — вычитаются.</p></div>
+    <div><h1>Своя игра</h1><p class="lead">Табло из пяти тем и пяти цен. Кто первым поднял руку — тот и отвечает. Верно — очки прибавляются, неверно — вычитаются.</p></div>
     ${stateBanner()}
     <section class="panel stack"><div class="label">Количество команд</div>
       <div class="count-pick">${[2,3,4].map(k=>`<button id="stc${k}" data-stc="${k}" aria-pressed="${k===n}">${k}<span>команды</span></button>`).join("")}</div>
@@ -1829,7 +1829,7 @@ function renderSvoya(){
     <section class="panel stack rules"><div class="label">Правила</div><ol>
       <li>Табло: 5 тем по 5 вопросов. Цена 100–200 — лёгкие вопросы, 300 — средние, 400–500 — сложные${sv.rounds===2?"; во втором раунде цены вдвое выше":""}.</li>
       <li>Команда выбирает тему и цену. Вопрос открывается на экране.</li>
-      <li>Кто <b>первым нажал кнопку</b>, тот отвечает. <b>Верно</b> — цена вопроса прибавляется, и эта команда выбирает следующий вопрос. <b>Неверно</b> — цена вычитается, и могут ответить другие команды.</li>
+      <li>Кто <b>первым поднял руку</b>, тот отвечает. <b>Верно</b> — цена вопроса прибавляется, и эта команда выбирает следующий вопрос. <b>Неверно</b> — цена вычитается, и могут ответить другие команды.</li>
       ${sv.cats?`<li><b>Кот в мешке</b>: команда, выбравшая этот вопрос, отдаёт его любой другой команде. Отвечает только она.</li>`:""}
       ${sv.final?`<li><b>Финал</b>: команды с положительным счётом делают ставку — сколько очков готовы рискнуть — и пишут ответ на листочке. Верно — ставка прибавляется, неверно — вычитается.</li>`:""}
     </ol></section>
@@ -1867,7 +1867,7 @@ function renderSvoya(){
   if(sv.stage==="question"){
     if(sv.answerer==null){
       const can=sv.teams.map((tm,i)=>i).filter(i=>!sv.tried.includes(i)&&(sv.catTo==null||i===sv.catTo));
-      ctrl=can.length?`<div class="label" style="text-align:center">${sv.catTo!=null?"Отвечает команда":"Кто первым нажал кнопку?"}</div><div class="cmarks">${can.map(i=>`<button class="cmark" data-svans="${i}" id="svans${i}" style="--c:${sv.teams[i].color}">${esc(sv.teams[i].name)}</button>`).join("")}</div>`:"";
+      ctrl=can.length?`<div class="label" style="text-align:center">${sv.catTo!=null?"Отвечает команда":"✋ Кто первым поднял руку?"}</div><div class="cmarks">${can.map(i=>`<button class="cmark" data-svans="${i}" id="svans${i}" style="--c:${sv.teams[i].color}">${esc(sv.teams[i].name)}</button>`).join("")}</div>`:"";
       ctrl+=`<div class="row" style="justify-content:center"><button class="btn" id="svnone">${sv.catTo!=null?"Показать ответ":"Никто не отвечает — показать ответ"}</button></div>`;
     } else {
       const tm=sv.teams[sv.answerer];
